@@ -1,18 +1,21 @@
 use std::fs::File;
+use std::io::Write;
 use std::path::PathBuf;
 
+use async_trait::async_trait;
 use serde::Deserialize;
 
-use botchella::Outcome;
+use botchella::{Achievable, Outcome};
 
 struct AddWordToFile {
     pub file: PathBuf,
 }
 
+#[async_trait]
 impl Achievable for AddWordToFile {
     type Description = Description;
 
-    async fn attempt(&mut self, description: &Description) -> Outcome {
+    fn attempt(&mut self, description: &Description) -> Outcome {
         let Ok(mut file) = File::options().append(true).create(true).open(&self.file) else {
             return Outcome::Failed;
         };

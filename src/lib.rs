@@ -1,3 +1,4 @@
+use async_trait::async_trait;
 use serde::Deserialize;
 
 pub enum Outcome {
@@ -6,8 +7,9 @@ pub enum Outcome {
     Failed,
 }
 
+#[async_trait]
 pub trait Achievable {
-    type Description: Deserialize;
+    type Description: for<'a> Deserialize<'a>;
 
-    async fn attempt(&mut self) -> Outcome;
+    async fn attempt(&mut self, description: &Self::Description) -> Outcome;
 }
