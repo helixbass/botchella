@@ -11,11 +11,17 @@ struct AddWordToFile {
     pub file: PathBuf,
 }
 
+impl AddWordToFile {
+    pub fn new(file: PathBuf) -> Self {
+        Self { file }
+    }
+}
+
 #[async_trait]
 impl Achievable for AddWordToFile {
     type Description = Description;
 
-    fn attempt(&mut self, description: &Description) -> Outcome {
+    async fn attempt(&mut self, description: &Description) -> Outcome {
         let Ok(mut file) = File::options().append(true).create(true).open(&self.file) else {
             return Outcome::Failed;
         };
@@ -33,3 +39,6 @@ impl Achievable for AddWordToFile {
 struct Description {
     pub word: String,
 }
+
+#[tokio::main]
+async fn main() {}
