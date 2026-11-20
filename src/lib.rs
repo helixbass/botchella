@@ -10,7 +10,7 @@ pub enum Outcome {
 }
 
 #[async_trait]
-pub trait Achievable<TTypes: sqlx::Type> {
+pub trait Achievable<TTypes: sqlx::Type<Postgres>> {
     type Description: for<'a> Deserialize<'a>;
 
     async fn attempt(&mut self, description: &Self::Description) -> Outcome;
