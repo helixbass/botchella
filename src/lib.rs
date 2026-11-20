@@ -48,6 +48,12 @@ async fn run_achievable_if_any_outstanding<
 
     record_start(row.achievable_id, &mut transaction).await?;
 
+    transaction.commit().await?;
+
+    let outcome = achievable.attempt(&row.description).await;
+
+    record_outcome(row.achievable_id, outcome, pool).await?;
+
     Ok(())
 }
 
