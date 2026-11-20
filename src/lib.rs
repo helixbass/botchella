@@ -1,6 +1,7 @@
 use async_trait::async_trait;
 use serde::Deserialize;
 
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum Outcome {
     Success,
     GiveUp,

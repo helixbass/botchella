@@ -41,4 +41,11 @@ struct Description {
 }
 
 #[tokio::main]
-async fn main() {}
+async fn main() {
+    let mut add_word_to_file = AddWordToFile::new("./tmp-words.txt".into());
+    let description = Description {
+        word: "whee".to_owned(),
+    };
+    let outcome = add_word_to_file.attempt(&description).await;
+    println!("{outcome:#?}");
+}
