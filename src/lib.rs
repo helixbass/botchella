@@ -17,13 +17,45 @@ pub trait Achievable<TTypes: sqlx::Type<Postgres>> {
     fn type_(&self) -> TTypes;
 }
 
+#[derive(sqlx::FromRow)]
+struct OutstandingRow<TDescription: Serialize + for<'a> Deserialize<'a>> {
+    pub achievable_id: i64,
+    pub description: TDescription,
+    pub action: AchievableAction,
+}
+
 async fn run_achievable_if_any_outstanding<
-    TTypes: sqlx::Type<Postgres>,
+    TTypes: sqlx::Type<Postgres> + for<'a> sqlx::Encode<'a, Postgres>,
     TDescription: Serialize + for<'a> Deserialize<'a>,
 >(
     achievable: &mut dyn Achievable<TTypes, Description = TDescription>,
     pool: &PgPool,
-) {
+) -> Result<(), sqlx::Error> {
+    let Some(row) = sqlx::query_as::<_, OutstandingRow<TDescription>>(
+        "
+        SELECT
+            achievables.id as achievable_id,
+            achievables.description,
+            most_recent_achievable_attempts.action
+        FROM achievables LEFT JOIN (
+            SELECT DISTINCT ON (achievable_id)
+                achievable_id,
+                action
+            FROM achievable_attempts
+            ORDER BY id DESC
+        ) most_recent_achievable_attempts
+        WHERE achievables.type = $1
+        LIMIT 1
+    ",
+    )
+    .bind(achievable.type_())
+    .fetch_optional(pool)
+    .await?
+    else {
+        return Ok(());
+    };
+
+    Ok(())
 }
 
 async fn create_achievable<
