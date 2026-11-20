@@ -6,3 +6,11 @@ CREATE TABLE achievables (
     description JSONB NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+CREATE TYPE achievable_action AS ENUM ('start', 'success', 'give_up', 'failed');
+
+CREATE TABLE achievable_attempts (
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    achievable_id BIGINT REFERENCES achievables(id) NOT NULL ON DELETE CASCADE,
+    action achievable_action NOT NULL,
+);

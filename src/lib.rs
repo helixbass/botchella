@@ -25,3 +25,12 @@ async fn run_achievable_if_any_outstanding<
     achievable: &mut dyn Achievable<TTypes, Description = TDescription>,
 ) {
 }
+
+#[derive(sqlx::Type)]
+#[sqlx(type_name = "achievable_action", rename_all = "snake_case")]
+enum AchievableAction {
+    Start,
+    Success,
+    GiveUp,
+    Failed,
+}
