@@ -45,7 +45,13 @@ async fn run_achievable_if_any_outstanding<
             FROM achievable_attempts
             ORDER BY id DESC
         ) most_recent_achievable_attempts
-        WHERE achievables.type = $1
+        ON achievables.id = most_recent_achievable_attempts.achievable_id
+        WHERE
+            achievables.type = $1
+            AND (
+                most_recent_achievable_attempts.action IS NULL
+                OR most_recent_achievable_attempts.action = 'failed'
+            )
         LIMIT 1
     ",
     )
