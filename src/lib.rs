@@ -24,5 +24,4 @@ async fn run_achievable_if_any_outstanding<
     pool: &PgPool,
     achievable: &mut dyn Achievable<TTypes, Description = TDescription>,
 ) {
-    unimplemented!()
 }

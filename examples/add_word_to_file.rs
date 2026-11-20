@@ -58,4 +58,6 @@ async fn main() {
     };
     let outcome = add_word_to_file.attempt(&description).await;
     println!("{outcome:#?}");
+
+    run_achievable_if_any_outstanding();
 }
