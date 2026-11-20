@@ -3,7 +3,7 @@ use std::io::Write;
 use std::path::PathBuf;
 
 use async_trait::async_trait;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 use botchella::{Achievable, Outcome};
 
@@ -45,7 +45,7 @@ impl Achievable<AchievableType> for AddWordToFile {
     }
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Serialize)]
 struct Description {
     pub word: String,
 }

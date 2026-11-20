@@ -1,6 +1,6 @@
 use async_trait::async_trait;
-use serde::Deserialize;
-use sqlx::{PgPool, Postgres};
+use serde::{Deserialize, Serialize};
+use sqlx::{types::Json, PgPool, Postgres};
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum Outcome {
@@ -11,7 +11,7 @@ pub enum Outcome {
 
 #[async_trait]
 pub trait Achievable<TTypes: sqlx::Type<Postgres>> {
-    type Description: for<'a> Deserialize<'a>;
+    type Description: Serialize + for<'a> Deserialize<'a>;
 
     async fn attempt(&mut self, description: &Self::Description) -> Outcome;
     fn type_(&self) -> TTypes;
@@ -19,21 +19,24 @@ pub trait Achievable<TTypes: sqlx::Type<Postgres>> {
 
 async fn run_achievable_if_any_outstanding<
     TTypes: sqlx::Type<Postgres>,
-    TDescription: for<'a> Deserialize<'a>,
+    TDescription: Serialize + for<'a> Deserialize<'a>,
 >(
     achievable: &mut dyn Achievable<TTypes, Description = TDescription>,
     pool: &PgPool,
 ) {
 }
 
-async fn create_achievable<TTypes: sqlx::Type<Postgres>, TDescription: for<'a> Deserialize<'a>>(
+async fn create_achievable<
+    TTypes: sqlx::Type<Postgres>,
+    TDescription: Serialize + for<'a> Deserialize<'a>,
+>(
     achievable: &dyn Achievable<TTypes, Description = TDescription>,
     description: &TDescription,
     pool: &PgPool,
 ) -> Result<(), sqlx::Error> {
     sqlx::query("INSERT INTO achievables (type, description) VALUES ($1, $2)")
         .bind(achievable.type_())
-        .bind(description)
+        .bind(Json(description))
         .execute(pool)
         .await?;
     Ok(())
