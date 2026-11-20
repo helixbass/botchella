@@ -27,7 +27,7 @@ async fn run_achievable_if_any_outstanding<
 }
 
 async fn create_achievable<
-    TTypes: sqlx::Type<Postgres>,
+    TTypes: sqlx::Type<Postgres> + for<'a> sqlx::Encode<'a, Postgres>,
     TDescription: Serialize + for<'a> Deserialize<'a>,
 >(
     achievable: &dyn Achievable<TTypes, Description = TDescription>,
