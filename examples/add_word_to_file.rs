@@ -7,6 +7,12 @@ use serde::Deserialize;
 
 use botchella::{Achievable, Outcome};
 
+#[derive(sqlx::Type)]
+#[sqlx(type_name = "achievable_types", rename_all = "snake_case")]
+enum AchievableType {
+    AddWordToFile,
+}
+
 struct AddWordToFile {
     pub file: PathBuf,
 }
@@ -18,7 +24,7 @@ impl AddWordToFile {
 }
 
 #[async_trait]
-impl Achievable for AddWordToFile {
+impl Achievable<AchievableType> for AddWordToFile {
     type Description = Description;
 
     async fn attempt(&mut self, description: &Description) -> Outcome {
@@ -32,6 +38,10 @@ impl Achievable for AddWordToFile {
             return Outcome::Failed;
         };
         Outcome::Success
+    }
+
+    fn type_(&self) -> AchievableType {
+        AchievableType::AddWordToFile
     }
 }
 
