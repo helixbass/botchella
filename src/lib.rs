@@ -18,15 +18,16 @@ pub trait Achievable<TTypes: sqlx::Type<Postgres>> {
 }
 
 #[derive(sqlx::FromRow)]
-struct OutstandingRow<TDescription: Serialize + for<'a> Deserialize<'a>> {
+struct OutstandingRow<TDescription: Serialize + for<'d> Deserialize<'d> + Send + Unpin + 'static> {
     pub achievable_id: i64,
+    #[sqlx(json)]
     pub description: TDescription,
     pub action: AchievableAction,
 }
 
 async fn run_achievable_if_any_outstanding<
     TTypes: sqlx::Type<Postgres> + for<'a> sqlx::Encode<'a, Postgres>,
-    TDescription: Serialize + for<'a> Deserialize<'a>,
+    TDescription: Serialize + for<'a> Deserialize<'a> + Send + Unpin + 'static,
 >(
     achievable: &mut dyn Achievable<TTypes, Description = TDescription>,
     pool: &PgPool,
