@@ -21,9 +21,22 @@ async fn run_achievable_if_any_outstanding<
     TTypes: sqlx::Type<Postgres>,
     TDescription: for<'a> Deserialize<'a>,
 >(
-    pool: &PgPool,
     achievable: &mut dyn Achievable<TTypes, Description = TDescription>,
+    pool: &PgPool,
 ) {
+}
+
+async fn create_achievable<TTypes: sqlx::Type<Postgres>, TDescription: for<'a> Deserialize<'a>>(
+    achievable: &dyn Achievable<TTypes, Description = TDescription>,
+    description: &TDescription,
+    pool: &PgPool,
+) -> Result<(), sqlx::Error> {
+    sqlx::query("INSERT INTO achievables (type, description) VALUES ($1, $2)")
+        .bind(achievable.type_())
+        .bind(description)
+        .execute(pool)
+        .await?;
+    Ok(())
 }
 
 #[derive(sqlx::Type)]
