@@ -42,6 +42,19 @@ async fn create_achievable<
     Ok(())
 }
 
+async fn record_outcome(
+    achievable_id: i64,
+    outcome: Outcome,
+    pool: &PgPool,
+) -> Result<(), sqlx::Error> {
+    sqlx::query("INSERT INTO achievable_attempts (achievable_id, action) VALUES ($1, $2)")
+        .bind(achievable_id)
+        .bind(AchievableAction::from(outcome))
+        .execute(pool)
+        .await?;
+    Ok(())
+}
+
 #[derive(sqlx::Type)]
 #[sqlx(type_name = "achievable_action", rename_all = "snake_case")]
 enum AchievableAction {
@@ -49,4 +62,14 @@ enum AchievableAction {
     Success,
     GiveUp,
     Failed,
+}
+
+impl From<Outcome> for AchievableAction {
+    fn from(value: Outcome) -> Self {
+        match value {
+            Outcome::Success => Self::Success,
+            Outcome::GiveUp => Self::GiveUp,
+            Outcome::Failed => Self::Failed,
+        }
+    }
 }
