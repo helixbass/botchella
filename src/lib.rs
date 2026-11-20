@@ -32,7 +32,21 @@ async fn run_achievable_if_any_outstanding<
     achievable: &mut dyn Achievable<TTypes, Description = TDescription>,
     pool: &PgPool,
 ) -> Result<(), sqlx::Error> {
-    let Some(row) = sqlx::query_as::<_, OutstandingRow<TDescription>>(
+    let Some(row) = fetch_outstanding_row(achievable, pool).await? else {
+        return Ok(());
+    };
+
+    Ok(())
+}
+
+async fn fetch_outstanding_row<
+    TTypes: sqlx::Type<Postgres> + for<'a> sqlx::Encode<'a, Postgres>,
+    TDescription: Serialize + for<'a> Deserialize<'a> + Send + Unpin + 'static,
+>(
+    achievable: &dyn Achievable<TTypes, Description = TDescription>,
+    pool: &PgPool,
+) -> Result<Option<OutstandingRow<TDescription>>, sqlx::Error> {
+    sqlx::query_as::<_, OutstandingRow<TDescription>>(
         "
         SELECT
             achievables.id as achievable_id,
@@ -57,12 +71,7 @@ async fn run_achievable_if_any_outstanding<
     )
     .bind(achievable.type_())
     .fetch_optional(pool)
-    .await?
-    else {
-        return Ok(());
-    };
-
-    Ok(())
+    .await
 }
 
 async fn create_achievable<
